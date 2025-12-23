@@ -1,0 +1,43 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 03 Intent :: Build CamDX PaymentIntent (v1)",
+  "nodes": [
+    {
+      "id": "start",
+      "name": "PI: Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {}
+    },
+    {
+      "id": "build-intent",
+      "name": "PI: Build Canonical PaymentIntent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const timestamp = Date.now();\nconst intentId = `pi_${timestamp}_${Math.random().toString(36).slice(2, 10)}`;\nconst expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();\n\nreturn {\n  json: {\n    ...$json,\n    camdx: {\n      payment_intent: {\n        intent_id: intentId,\n        version: '1.0',\n        created_at: new Date().toISOString(),\n        expires_at: expiresAt,\n        status: 'pending',\n        merchant: {\n          merchant_id: $json.commerce.request.merchant_id,\n          merchant_name: 'Num Pang Express',\n          merchant_type: 'sme_food_vendor'\n        },\n        customer: {\n          user_handle: $json.commerce.request.actor.user_handle,\n          platform_user_id: $json.commerce.request.actor.platform_user_id,\n          identity_level: $json.identity.assertion.identity_level\n        },\n        transaction: {\n          amount: $json.commerce.request.intent_hint.amount,\n          currency: 'USD',\n          description: $json.commerce.request.intent_hint.product_name,\n          items: [{\n            item_id: $json.commerce.request.intent_hint.product_id,\n            name: $json.product.name,\n            quantity: 1,\n            unit_price: $json.product.price,\n            total: $json.product.price\n          }]\n        },\n        metadata: {\n          channel: 'telegram',\n          request_id: $json.commerce.request.request_id,\n          amount_band: $json.commerce.request.intent_hint.amount_band\n        }\n      }\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "output",
+      "name": "PI: Output Intent",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "PI: Start": {
+      "main": [[{"node": "PI: Build Canonical PaymentIntent", "type": "main", "index": 0}]]
+    },
+    "PI: Build Canonical PaymentIntent": {
+      "main": [[{"node": "PI: Output Intent", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

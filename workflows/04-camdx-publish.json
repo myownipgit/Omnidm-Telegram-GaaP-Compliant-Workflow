@@ -1,0 +1,74 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 04 CamDX Publish :: Publish PaymentIntent (v1)",
+  "nodes": [
+    {
+      "id": "start",
+      "name": "DX: Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {}
+    },
+    {
+      "id": "publish",
+      "name": "DX: Mock CamDX Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Mock-Service",
+              "value": "CamDX"
+            },
+            {
+              "name": "X-CamDX-Operation",
+              "value": "publish-intent"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.camdx.payment_intent) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "parse-response",
+      "name": "DX: Parse Publish Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "return {\n  json: {\n    ...$json,\n    camdx: {\n      ...$json.camdx,\n      publish_receipt: {\n        correlation_id: `corr_${Date.now()}`,\n        published_at: new Date().toISOString(),\n        policy_outcome: 'approved',\n        camdx_ref: `cdx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`\n      }\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "output",
+      "name": "DX: Output",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "DX: Start": {
+      "main": [[{"node": "DX: Mock CamDX Publish", "type": "main", "index": 0}]]
+    },
+    "DX: Mock CamDX Publish": {
+      "main": [[{"node": "DX: Parse Publish Receipt", "type": "main", "index": 0}]]
+    },
+    "DX: Parse Publish Receipt": {
+      "main": [[{"node": "DX: Output", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

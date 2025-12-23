@@ -1,0 +1,98 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 09 Audit :: CamDL Compliance Log (v1)",
+  "nodes": [
+    {
+      "id": "start",
+      "name": "AUD: Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {}
+    },
+    {
+      "id": "build-audit-event",
+      "name": "AUD: Build Audit Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const crypto = require('crypto');\n\nconst eventData = JSON.stringify({\n  event_type: 'payment_intent_created',\n  intent_id: $json.camdx.payment_intent.intent_id,\n  merchant_id: $json.camdx.payment_intent.merchant.merchant_id,\n  amount: $json.camdx.payment_intent.transaction.amount,\n  identity_level: $json.identity.assertion.identity_level,\n  policy_decision: $json.identity.policy_decision.decision,\n  timestamp: new Date().toISOString()\n});\n\nconst hash = crypto.createHash('sha256').update(eventData).digest('hex');\n\nreturn {\n  json: {\n    audit_event: {\n      event_id: `audit_${Date.now()}`,\n      event_data: eventData,\n      event_hash: hash,\n      camdl_ready: true\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "mock-camdl",
+      "name": "AUD: Mock CamDL Hash Anchor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Mock-Service",
+              "value": "CamDL"
+            },
+            {
+              "name": "X-CamDL-Operation",
+              "value": "anchor-hash"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_hash",
+              "value": "={{ $json.audit_event.event_hash }}"
+            },
+            {
+              "name": "event_type",
+              "value": "payment_intent_created"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "store-receipt",
+      "name": "AUD: Store Audit Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "return {\n  json: {\n    audit_receipt: {\n      event_id: $json.audit_event.event_id,\n      anchored_at: new Date().toISOString(),\n      camdl_block: `block_${Date.now()}`,\n      tx_hash: `0x${Math.random().toString(16).slice(2, 66)}`,\n      immutable: true,\n      compliance_ready: true\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "output",
+      "name": "AUD: Output Receipt",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "AUD: Start": {
+      "main": [[{"node": "AUD: Build Audit Event", "type": "main", "index": 0}]]
+    },
+    "AUD: Build Audit Event": {
+      "main": [[{"node": "AUD: Mock CamDL Hash Anchor", "type": "main", "index": 0}]]
+    },
+    "AUD: Mock CamDL Hash Anchor": {
+      "main": [[{"node": "AUD: Store Audit Receipt", "type": "main", "index": 0}]]
+    },
+    "AUD: Store Audit Receipt": {
+      "main": [[{"node": "AUD: Output Receipt", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

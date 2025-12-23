@@ -1,0 +1,126 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 08 Fulfill :: Deliver Order (Grab Integration Ready) (v1)",
+  "nodes": [
+    {
+      "id": "start",
+      "name": "FUL: Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {}
+    },
+    {
+      "id": "prepare-fulfillment",
+      "name": "FUL: Prepare Order Fulfillment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "return {\n  json: {\n    ...$json,\n    fulfillment: {\n      order_id: $json.intent_id,\n      status: 'preparing',\n      merchant_id: 'numpang-express-001',\n      delivery_method: 'grab_express',\n      grab_integration_ready: true,\n      delivery_address: null,\n      preparation_time_minutes: 15\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "mock-grab-api",
+      "name": "FUL: Mock Grab API (Create Delivery)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Mock-Service",
+              "value": "Grab-Express-API"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer GRAB_API_KEY_PLACEHOLDER"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "service_type",
+              "value": "INSTANT"
+            },
+            {
+              "name": "merchant_order_id",
+              "value": "={{ $json.fulfillment.order_id }}"
+            },
+            {
+              "name": "sender_name",
+              "value": "Num Pang Express"
+            },
+            {
+              "name": "pickup_address",
+              "value": "Street 240, Phnom Penh"
+            },
+            {
+              "name": "note",
+              "value": "Food delivery - handle with care"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "update-fulfillment",
+      "name": "FUL: Update Fulfillment Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "return {\n  json: {\n    ...$json,\n    fulfillment: {\n      ...$json.fulfillment,\n      status: 'dispatched',\n      grab_delivery_id: `grab_${Date.now()}`,\n      driver_assigned: true,\n      estimated_delivery: new Date(Date.now() + 30 * 60 * 1000).toISOString()\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "send-confirmation",
+      "name": "FUL: Send Delivery Confirmation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 300],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "CHAT_ID_PLACEHOLDER",
+        "text": "🎉 Order confirmed and dispatched!\n\n🛵 Grab driver assigned\n⏰ ETA: 30 minutes\n\n📦 Track: {{ $json.fulfillment.grab_delivery_id }}"
+      }
+    },
+    {
+      "id": "output",
+      "name": "FUL: Output",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "FUL: Start": {
+      "main": [[{"node": "FUL: Prepare Order Fulfillment", "type": "main", "index": 0}]]
+    },
+    "FUL: Prepare Order Fulfillment": {
+      "main": [[{"node": "FUL: Mock Grab API (Create Delivery)", "type": "main", "index": 0}]]
+    },
+    "FUL: Mock Grab API (Create Delivery)": {
+      "main": [[{"node": "FUL: Update Fulfillment Status", "type": "main", "index": 0}]]
+    },
+    "FUL: Update Fulfillment Status": {
+      "main": [[{"node": "FUL: Send Delivery Confirmation", "type": "main", "index": 0}]]
+    },
+    "FUL: Send Delivery Confirmation": {
+      "main": [[{"node": "FUL: Output", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

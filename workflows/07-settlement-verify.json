@@ -1,0 +1,102 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 07 Verify :: Poll Bakong Settlement (v1)",
+  "nodes": [
+    {
+      "id": "schedule",
+      "name": "SETTLE: Every 30 Seconds",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "secondsInterval": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "get-pending",
+      "name": "SETTLE: Mock Get Pending Intents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "return {\n  json: {\n    pending_intents: [\n      {\n        intent_id: 'pi_test_001',\n        md5_hash: 'md5_test_001',\n        amount: 45.00,\n        created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()\n      }\n    ]\n  }\n};"
+      }
+    },
+    {
+      "id": "check-bakong",
+      "name": "SETTLE: Check Bakong MD5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Mock-Service",
+              "value": "Bakong-Verify"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "md5_hash",
+              "value": "={{ $json.pending_intents[0].md5_hash }}"
+            },
+            {
+              "name": "mock_verified",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "update-status",
+      "name": "SETTLE: Update Intent Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "return {\n  json: {\n    intent_id: $json.pending_intents[0].intent_id,\n    new_status: 'completed',\n    verified_at: new Date().toISOString(),\n    settlement_ref: `settle_${Date.now()}`,\n    amount: $json.pending_intents[0].amount\n  }\n};"
+      }
+    },
+    {
+      "id": "output",
+      "name": "SETTLE: Trigger Fulfillment",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "SETTLE: Every 30 Seconds": {
+      "main": [[{"node": "SETTLE: Mock Get Pending Intents", "type": "main", "index": 0}]]
+    },
+    "SETTLE: Mock Get Pending Intents": {
+      "main": [[{"node": "SETTLE: Check Bakong MD5", "type": "main", "index": 0}]]
+    },
+    "SETTLE: Check Bakong MD5": {
+      "main": [[{"node": "SETTLE: Update Intent Status", "type": "main", "index": 0}]]
+    },
+    "SETTLE: Update Intent Status": {
+      "main": [[{"node": "SETTLE: Trigger Fulfillment", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

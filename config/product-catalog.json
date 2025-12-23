@@ -1,0 +1,89 @@
+{
+  "catalog_version": "1.0",
+  "merchant_id": "numpang-express-001",
+  "merchant_name": "Num Pang Express",
+  "currency": "USD",
+  "products": [
+    {
+      "product_id": "P001",
+      "name": "Num Pang Sandwich",
+      "description": "Classic Cambodian baguette with pork, pâté, pickled vegetables, and fresh herbs",
+      "price": 3.50,
+      "amount_band": "A",
+      "category": "individual",
+      "preparation_time_minutes": 5,
+      "available": true
+    },
+    {
+      "product_id": "P002",
+      "name": "Coffee + Pastry Set",
+      "description": "Perfect breakfast combo with Cambodian iced coffee and French pastry",
+      "price": 5.00,
+      "amount_band": "A",
+      "category": "breakfast",
+      "preparation_time_minutes": 3,
+      "available": true
+    },
+    {
+      "product_id": "P003",
+      "name": "Lunch Set (4 people)",
+      "description": "Family meal deal with 4 Num Pang sandwiches, sides, and drinks",
+      "price": 45.00,
+      "amount_band": "B",
+      "category": "family",
+      "preparation_time_minutes": 15,
+      "available": true
+    },
+    {
+      "product_id": "P004",
+      "name": "Party Catering",
+      "description": "20-person event package with assorted sandwiches, appetizers, and beverages",
+      "price": 250.00,
+      "amount_band": "C",
+      "category": "catering",
+      "preparation_time_minutes": 120,
+      "available": true,
+      "requires_advance_order": true,
+      "advance_hours": 24
+    },
+    {
+      "product_id": "P005",
+      "name": "Wedding Catering",
+      "description": "Full wedding service for 100+ guests with custom menu planning",
+      "price": 2500.00,
+      "amount_band": "D",
+      "category": "premium_catering",
+      "preparation_time_minutes": 480,
+      "available": true,
+      "requires_advance_order": true,
+      "advance_hours": 168,
+      "requires_consultation": true
+    }
+  ],
+  "amount_bands": {
+    "A": {
+      "label": "Micro Transaction",
+      "range": "≤ $10 USD",
+      "identity_requirement": "anonymous",
+      "policy": "allowed"
+    },
+    "B": {
+      "label": "Small Transaction",
+      "range": "$10 - $100 USD",
+      "identity_requirement": "basic",
+      "policy": "step_up_required"
+    },
+    "C": {
+      "label": "Medium Transaction",
+      "range": "$100 - $1,000 USD",
+      "identity_requirement": "verified",
+      "policy": "step_up_required"
+    },
+    "D": {
+      "label": "Large Transaction",
+      "range": "> $1,000 USD",
+      "identity_requirement": "high_assurance",
+      "policy": "step_up_required"
+    }
+  }
+}

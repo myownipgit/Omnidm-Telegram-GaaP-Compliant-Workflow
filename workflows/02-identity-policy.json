@@ -1,0 +1,92 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 02 Identity :: CamDX Policy Threshold Evaluator (v1)",
+  "nodes": [
+    {
+      "id": "start",
+      "name": "ID: Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {}
+    },
+    {
+      "id": "get-product-price",
+      "name": "ID: Lookup Product Price",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const productId = $json.commerce.request.intent_hint.product_id;\nconst catalog = {\n  'P001': { name: 'Num Pang Sandwich', price: 3.50, band: 'A' },\n  'P002': { name: 'Coffee + Pastry Set', price: 5.00, band: 'A' },\n  'P003': { name: 'Lunch Set (4 people)', price: 45.00, band: 'B' },\n  'P004': { name: 'Party Catering', price: 250.00, band: 'C' },\n  'P005': { name: 'Wedding Catering', price: 2500.00, band: 'D' }\n};\n\nconst product = catalog[productId];\n\nreturn {\n  json: {\n    ...$json,\n    product,\n    commerce: {\n      ...$json.commerce,\n      request: {\n        ...$json.commerce.request,\n        intent_hint: {\n          ...$json.commerce.request.intent_hint,\n          amount: product.price,\n          product_name: product.name,\n          amount_band: product.band\n        }\n      }\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "evaluate-threshold",
+      "name": "ID: Evaluate Policy Matrix",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const band = $json.commerce.request.intent_hint.amount_band;\nconst identityLevel = 'anonymous';\n\nconst matrix = {\n  'A': { anonymous: 'allowed' },\n  'B': { anonymous: 'limited', basic: 'allowed' },\n  'C': { anonymous: 'blocked', basic: 'limited', verified: 'allowed' },\n  'D': { anonymous: 'blocked', basic: 'blocked', verified: 'limited', high_assurance: 'allowed' }\n};\n\nconst decision = matrix[band][identityLevel];\n\nconst requiredLevels = {\n  'A': 'anonymous',\n  'B': 'basic',\n  'C': 'verified',\n  'D': 'high_assurance'\n};\n\nreturn {\n  json: {\n    ...$json,\n    identity: {\n      assertion: {\n        identity_level: identityLevel,\n        required_level: requiredLevels[band]\n      },\n      policy_decision: {\n        decision,\n        amount_band: band\n      }\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "if-allowed",
+      "name": "ID: Check If Allowed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.identity.policy_decision.decision }}",
+              "rightValue": "allowed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "approved",
+      "name": "ID: Approved",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "parameters": {}
+    },
+    {
+      "id": "requires-step-up",
+      "name": "ID: Requires Identity",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1120, 400],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "ID: Start": {
+      "main": [[{"node": "ID: Lookup Product Price", "type": "main", "index": 0}]]
+    },
+    "ID: Lookup Product Price": {
+      "main": [[{"node": "ID: Evaluate Policy Matrix", "type": "main", "index": 0}]]
+    },
+    "ID: Evaluate Policy Matrix": {
+      "main": [[{"node": "ID: Check If Allowed", "type": "main", "index": 0}]]
+    },
+    "ID: Check If Allowed": {
+      "main": [
+        [{"node": "ID: Approved", "type": "main", "index": 0}],
+        [{"node": "ID: Requires Identity", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

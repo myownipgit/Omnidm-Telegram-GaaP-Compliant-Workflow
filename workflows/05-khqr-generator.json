@@ -1,0 +1,88 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 05 KHQR :: Generate KHQR + Deeplink (v1)",
+  "nodes": [
+    {
+      "id": "start",
+      "name": "QR: Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {}
+    },
+    {
+      "id": "generate-khqr",
+      "name": "QR: Mock KHQR Generator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Mock-Service",
+              "value": "Bakong-KHQR"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "merchant_id",
+              "value": "={{ $json.camdx.payment_intent.merchant.merchant_id }}"
+            },
+            {
+              "name": "amount",
+              "value": "={{ $json.camdx.payment_intent.transaction.amount }}"
+            },
+            {
+              "name": "currency",
+              "value": "USD"
+            },
+            {
+              "name": "intent_id",
+              "value": "={{ $json.camdx.payment_intent.intent_id }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "build-khqr",
+      "name": "QR: Build KHQR Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const intentId = $json.camdx.payment_intent.intent_id;\nconst amount = $json.camdx.payment_intent.transaction.amount;\nconst merchantId = $json.camdx.payment_intent.merchant.merchant_id;\n\nconst qrString = `khqr:${merchantId}:${amount}:USD:${intentId}`;\nconst md5Hash = `md5_${intentId}_${Date.now()}`;\nconst deeplink = `bakong://pay?qr=${encodeURIComponent(qrString)}&ref=${intentId}`;\n\nreturn {\n  json: {\n    ...$json,\n    rail: {\n      payload: {\n        khqr: {\n          qr_string: qrString,\n          deeplink: deeplink,\n          md5_hash: md5Hash,\n          generated_at: new Date().toISOString(),\n          expires_at: $json.camdx.payment_intent.expires_at\n        }\n      }\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "output",
+      "name": "QR: Output",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "QR: Start": {
+      "main": [[{"node": "QR: Mock KHQR Generator", "type": "main", "index": 0}]]
+    },
+    "QR: Mock KHQR Generator": {
+      "main": [[{"node": "QR: Build KHQR Payload", "type": "main", "index": 0}]]
+    },
+    "QR: Build KHQR Payload": {
+      "main": [[{"node": "QR: Output", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

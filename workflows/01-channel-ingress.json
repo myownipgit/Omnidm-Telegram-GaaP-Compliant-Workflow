@@ -1,0 +1,137 @@
+{
+  "name": "[KH.GaaS] omnidm.ai :: 01 Channel Ingress :: Telegram Num Pang Commerce (v1)",
+  "nodes": [
+    {
+      "id": "telegram-trigger",
+      "name": "ING: Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "parameters": {
+        "updates": ["message"]
+      }
+    },
+    {
+      "id": "parse-message",
+      "name": "ING: Parse User Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const msg = $input.item.json.message;\nconst from = msg.from || {};\nconst text = (msg.text || '').trim();\nconst timestamp = Date.now();\nconst requestId = `crq_tg_${timestamp}_${Math.random().toString(36).slice(2, 8)}`;\n\nlet intentType = 'unknown';\nlet productId = null;\n\nif (text === '/start' || text.toLowerCase().includes('hello')) {\n  intentType = 'greeting';\n} else if (text.toLowerCase().includes('menu')) {\n  intentType = 'browse_menu';\n} else if (text.match(/^[1-5]$/)) {\n  intentType = 'select_product';\n  productId = `P00${text}`;\n}\n\nreturn {\n  json: {\n    commerce: {\n      request: {\n        request_id: requestId,\n        channel: 'telegram',\n        received_at: new Date().toISOString(),\n        tenant_id: 'omnidm-ai',\n        merchant_id: 'numpang-express-001',\n        actor: {\n          user_handle: from.username || from.id?.toString() || 'unknown',\n          platform_user_id: from.id?.toString(),\n          first_name: from.first_name || '',\n          last_name: from.last_name || ''\n        },\n        message: {\n          text: text,\n          chat_id: msg.chat.id\n        },\n        intent_hint: {\n          type: intentType,\n          product_id: productId,\n          currency: 'USD'\n        }\n      }\n    }\n  }\n};"
+      }
+    },
+    {
+      "id": "route-intent",
+      "name": "ING: Route By Intent",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [680, 300],
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "output": 0,
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.commerce.request.intent_hint.type }}",
+                    "rightValue": "greeting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "output": 1,
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.commerce.request.intent_hint.type }}",
+                    "rightValue": "browse_menu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "output": 2,
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.commerce.request.intent_hint.type }}",
+                    "rightValue": "select_product",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "fallbackOutput": 3
+      }
+    },
+    {
+      "id": "send-welcome",
+      "name": "ING: Send Welcome",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 100],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.commerce.request.message.chat_id }}",
+        "text": "🥖 Welcome to Num Pang Express!\n\nCambodia's favorite street food, now on Telegram.\n\n📱 Quick Commands:\n• Type 'menu' to browse\n• Type number (1-5) to select\n• Type 'status' to track orders\n\n✨ Powered by Cambodia GaaP FinTech Rails"
+      }
+    },
+    {
+      "id": "send-menu",
+      "name": "ING: Send Menu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 240],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.commerce.request.message.chat_id }}",
+        "text": "🍽️ Num Pang Express Menu\n\n1️⃣ Num Pang Sandwich - $3.50\n   Classic Cambodian baguette\n\n2️⃣ Coffee + Pastry Set - $5.00\n   Perfect breakfast combo\n\n3️⃣ Lunch Set (4 people) - $45.00\n   Family meal deal\n\n4️⃣ Party Catering - $250.00\n   20-person event package\n\n5️⃣ Wedding Catering - $2,500\n   Full wedding service (100+ guests)\n\n💡 Reply with a number (1-5) to order"
+      }
+    },
+    {
+      "id": "output",
+      "name": "ING: Output to Next Workflow",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 380],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "ING: Telegram Trigger": {
+      "main": [[{"node": "ING: Parse User Message", "type": "main", "index": 0}]]
+    },
+    "ING: Parse User Message": {
+      "main": [[{"node": "ING: Route By Intent", "type": "main", "index": 0}]]
+    },
+    "ING: Route By Intent": {
+      "main": [
+        [{"node": "ING: Send Welcome", "type": "main", "index": 0}],
+        [{"node": "ING: Send Menu", "type": "main", "index": 0}],
+        [{"node": "ING: Output to Next Workflow", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
