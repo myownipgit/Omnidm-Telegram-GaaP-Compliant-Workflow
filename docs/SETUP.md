@@ -98,22 +98,22 @@ n8n import:workflow --input=./workflows/01-channel-ingress.json
 1. Open Telegram → Search **@BotFather**
 2. Send `/newbot`
 3. Follow prompts:
-   - **Bot Name:** Num Pang Express Bot
-   - **Username:** `omnidm_bot` (or your choice)
-4. **Save the token:** `7939716577:AAGEME3OeKPSIlruYq2wz5WgtrUCyifVEZo`
+   - **Bot Name:** Your Bot Name (e.g., "Num Pang Express Bot")
+   - **Username:** `your_bot_username` (must be unique)
+4. **Save the token** provided by BotFather (keep it secure!)
 
 #### Add to n8n
 
 1. **Open Workflow 01** (Channel Ingress)
 2. **Click Telegram Trigger node**
 3. **Add Credentials:**
-   - Name: `omnidm_bot`
-   - Access Token: `7939716577:AAGEME3OeKPSIlruYq2wz5WgtrUCyifVEZo`
+   - Name: `your_bot_credential_name`
+   - Access Token: `YOUR_BOT_TOKEN_FROM_BOTFATHER`
 4. **Save**
 
 5. **Repeat for Workflow 06** (Deliver to Telegram)
    - Click Telegram Send Message nodes
-   - Select existing `omnidm_bot` credential
+   - Select existing credential you just created
 
 ### 2. Product Catalog (Optional Customization)
 
@@ -181,7 +181,7 @@ Get Grab API credentials from: https://developer.grab.com
 ### Test Telegram Bot
 
 1. **Open Telegram**
-2. **Search for your bot:** `@omnidm_bot`
+2. **Search for your bot:** `@your_bot_username`
 3. **Send `/start`**
 
 **Expected Response:**

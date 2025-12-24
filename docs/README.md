@@ -147,8 +147,8 @@ This implementation maps to Cambodia's national digital rails:
 
 3. **Configure Credentials**
    - Add Telegram Bot credentials in n8n:
-     - Name: `omnidm_bot`
-     - Token: `7939716577:AAGEME3OeKPSIlruYq2wz5WgtrUCyifVEZo`
+     - Name: `your_bot_name`
+     - Token: `YOUR_TELEGRAM_BOT_TOKEN` (obtain from @BotFather)
 
 4. **Activate Workflow 01**
    - Enable "Channel Ingress" workflow
@@ -156,7 +156,7 @@ This implementation maps to Cambodia's national digital rails:
 
 5. **Test**
    ```
-   Open Telegram → Search @omnidm_bot → /start
+   Open Telegram → Search @your_bot_name → /start
    ```
 
 ---
