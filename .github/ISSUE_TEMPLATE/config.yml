@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔐 Security Vulnerability
+    url: mailto:contact@omnidm.ai
+    about: Report security vulnerabilities privately via email
+  - name: 💬 Discussions
+    url: https://github.com/myownipgit/Omnidm-Telegram-GaaP-Compliant-Workflow/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📚 Documentation
+    url: https://github.com/myownipgit/Omnidm-Telegram-GaaP-Compliant-Workflow/tree/main/docs
+    about: Read the comprehensive documentation
+  - name: 🔒 Security Policy
+    url: https://github.com/myownipgit/Omnidm-Telegram-GaaP-Compliant-Workflow/blob/main/SECURITY.md
+    about: Review our security policy

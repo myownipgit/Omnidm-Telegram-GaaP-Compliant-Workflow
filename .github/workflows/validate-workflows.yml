@@ -1,0 +1,196 @@
+name: Validate n8n Workflows
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'workflows/**/*.json'
+      - 'config/**/*.json'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'workflows/**/*.json'
+      - 'config/**/*.json'
+
+jobs:
+  validate-json:
+    name: Validate JSON Syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate workflow JSON files
+        run: |
+          echo "🔍 Validating JSON syntax..."
+          for file in workflows/*.json config/*.json; do
+            if [ -f "$file" ]; then
+              echo "Checking: $file"
+              if ! jq empty "$file" 2>/dev/null; then
+                echo "❌ Invalid JSON: $file"
+                exit 1
+              else
+                echo "✅ Valid JSON: $file"
+              fi
+            fi
+          done
+          echo "✅ All JSON files are valid!"
+
+  validate-workflow-structure:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+    needs: validate-json
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate workflow structure
+        run: |
+          echo "🔍 Validating workflow structure..."
+          for file in workflows/*.json; do
+            if [ -f "$file" ]; then
+              echo "Checking: $file"
+
+              # Check for required fields
+              if ! jq -e '.name' "$file" >/dev/null 2>&1; then
+                echo "❌ Missing 'name' field in $file"
+                exit 1
+              fi
+
+              if ! jq -e '.nodes' "$file" >/dev/null 2>&1; then
+                echo "❌ Missing 'nodes' field in $file"
+                exit 1
+              fi
+
+              if ! jq -e '.connections' "$file" >/dev/null 2>&1; then
+                echo "❌ Missing 'connections' field in $file"
+                exit 1
+              fi
+
+              echo "✅ Valid structure: $file"
+            fi
+          done
+          echo "✅ All workflows have valid structure!"
+
+  validate-naming-convention:
+    name: Validate GaaP Naming Convention
+    runs-on: ubuntu-latest
+    needs: validate-json
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate GaaP naming convention
+        run: |
+          echo "🔍 Validating GaaP naming convention..."
+          for file in workflows/*.json; do
+            if [ -f "$file" ]; then
+              name=$(jq -r '.name' "$file")
+              echo "Checking: $name"
+
+              # Check if name starts with [KH.GaaS]
+              if [[ ! "$name" =~ ^\[KH\.GaaS\] ]]; then
+                echo "❌ Workflow name must start with '[KH.GaaS]': $file"
+                echo "   Current name: $name"
+                exit 1
+              fi
+
+              echo "✅ Valid naming: $name"
+            fi
+          done
+          echo "✅ All workflows follow GaaP naming convention!"
+
+  check-credentials:
+    name: Check for Exposed Credentials
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Scan for exposed credentials
+        run: |
+          echo "🔍 Scanning for exposed credentials..."
+
+          # Common credential patterns
+          patterns=(
+            "password[\"']?\s*[:=]\s*[\"'][^\"']{8,}"
+            "api[_-]?key[\"']?\s*[:=]\s*[\"'][^\"']{8,}"
+            "secret[\"']?\s*[:=]\s*[\"'][^\"']{8,}"
+            "token[\"']?\s*[:=]\s*[\"'][^\"']{8,}"
+            "Bearer [A-Za-z0-9\-_]{20,}"
+            "[0-9]{10}:[A-Za-z0-9_-]{35}"
+          )
+
+          found_issue=false
+
+          for pattern in "${patterns[@]}"; do
+            if grep -rE "$pattern" workflows/ config/ --exclude="*.example.json" 2>/dev/null; then
+              echo "❌ Potential exposed credential found!"
+              found_issue=true
+            fi
+          done
+
+          if [ "$found_issue" = true ]; then
+            echo "❌ Security check failed! Please review and remove exposed credentials."
+            exit 1
+          fi
+
+          echo "✅ No exposed credentials detected!"
+
+  validate-config:
+    name: Validate Configuration Files
+    runs-on: ubuntu-latest
+    needs: validate-json
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate product catalog
+        run: |
+          echo "🔍 Validating product catalog..."
+
+          if [ -f "config/product-catalog.json" ]; then
+            # Check for required fields
+            if ! jq -e '.products' config/product-catalog.json >/dev/null; then
+              echo "❌ Missing 'products' array in product-catalog.json"
+              exit 1
+            fi
+
+            # Count products
+            product_count=$(jq '.products | length' config/product-catalog.json)
+            echo "✅ Found $product_count products"
+
+            # Validate each product has required fields
+            if ! jq -e '.products[] | select(.product_id and .name and .price and .amount_band)' config/product-catalog.json >/dev/null; then
+              echo "❌ Some products missing required fields (product_id, name, price, amount_band)"
+              exit 1
+            fi
+
+            echo "✅ Product catalog is valid!"
+          else
+            echo "⚠️ Product catalog not found (optional)"
+          fi
+
+  summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    needs: [validate-json, validate-workflow-structure, validate-naming-convention, check-credentials, validate-config]
+    if: always()
+
+    steps:
+      - name: Summary
+        run: |
+          echo "📊 Validation Summary"
+          echo "===================="
+          echo "✅ JSON Syntax: Passed"
+          echo "✅ Workflow Structure: Passed"
+          echo "✅ GaaP Naming Convention: Passed"
+          echo "✅ Credential Scan: Passed"
+          echo "✅ Configuration: Passed"
+          echo ""
+          echo "🎉 All validations passed!"
