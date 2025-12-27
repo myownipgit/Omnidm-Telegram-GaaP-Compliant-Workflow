@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "foxundermoon.shell-format",
+    "dbaeumer.vscode-eslint",
+    "redhat.vscode-yaml",
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
+    "ms-vscode.vscode-json-languageservice",
+    "bierner.markdown-preview-github-styles",
+    "davidanson.vscode-markdownlint"
+  ],
+  "unwantedRecommendations": []
+}

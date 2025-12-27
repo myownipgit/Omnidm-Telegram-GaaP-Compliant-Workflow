@@ -1,20 +1,25 @@
 # Credentials and Secrets
 config/credentials.json
 .env
+.env.local
+.env.*.local
 *.pem
 *.key
 *.crt
+
+# Claude MCP Configuration (contains API keys)
+.claude/mcp.json
 
 # n8n
 .n8n/
 node_modules/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
 *~
+# .vscode/ is tracked (team settings)
 
 # OS
 .DS_Store

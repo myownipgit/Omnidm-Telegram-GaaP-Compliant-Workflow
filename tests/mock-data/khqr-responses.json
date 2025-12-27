@@ -1,0 +1,187 @@
+{
+  "description": "Sample KHQR (Bakong) API responses for testing payment workflows",
+  "create_payment_intent_responses": [
+    {
+      "scenario": "Band A - Anonymous user - $7 sandwich order",
+      "request": {
+        "amount": 7.00,
+        "currency": "USD",
+        "order_id": "ORD-20250101-0001",
+        "identity_level": "anonymous",
+        "amount_band": "A"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "intent_id": "PI-20250101-0001",
+          "camdx_correlation_id": "CAMDX-2025-A-001234",
+          "policy_decision": "allowed",
+          "khqr_string": "00020101021230820016khqr.aba@ababank520441115802KH5916Num Pang Express6011Phnom Penh62410109ORD-00011708PI-000016304A1B2",
+          "khqr_deeplink": "https://bakong.nbc.gov.kh/qr?data=00020101021230820016khqr.aba@ababank520441115802KH5916Num Pang Express6011Phnom Penh62410109ORD-00011708PI-000016304A1B2",
+          "khqr_md5_hash": "5f4dcc3b5aa765d61d8327deb882cf99",
+          "expires_at": "2025-01-01T10:15:00Z",
+          "created_at": "2025-01-01T10:00:00Z"
+        }
+      }
+    },
+    {
+      "scenario": "Band B - Basic verified user - $45 lunch set",
+      "request": {
+        "amount": 45.00,
+        "currency": "USD",
+        "order_id": "ORD-20250101-0002",
+        "identity_level": "basic",
+        "amount_band": "B"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "intent_id": "PI-20250101-0002",
+          "camdx_correlation_id": "CAMDX-2025-B-002345",
+          "policy_decision": "allowed",
+          "khqr_string": "00020101021230820016khqr.aba@ababank5204411154044500802KH5916Num Pang Express6011Phnom Penh62410109ORD-00021708PI-000026304B2C3",
+          "khqr_deeplink": "https://bakong.nbc.gov.kh/qr?data=00020101021230820016khqr.aba@ababank5204411154044500802KH5916Num Pang Express6011Phnom Penh62410109ORD-00021708PI-000026304B2C3",
+          "khqr_md5_hash": "098f6bcd4621d373cade4e832627b4f6",
+          "expires_at": "2025-01-01T11:45:00Z",
+          "created_at": "2025-01-01T11:30:00Z"
+        }
+      }
+    },
+    {
+      "scenario": "Band C - Verified user - $250 catering",
+      "request": {
+        "amount": 250.00,
+        "currency": "USD",
+        "order_id": "ORD-20250101-0003",
+        "identity_level": "verified",
+        "amount_band": "C"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "intent_id": "PI-20250101-0003",
+          "camdx_correlation_id": "CAMDX-2025-C-003456",
+          "policy_decision": "allowed",
+          "khqr_string": "00020101021230820016khqr.aba@ababank520441115405250.00802KH5916Num Pang Express6011Phnom Penh62410109ORD-00031708PI-000036304C3D4",
+          "khqr_deeplink": "https://bakong.nbc.gov.kh/qr?data=00020101021230820016khqr.aba@ababank520441115405250.00802KH5916Num Pang Express6011Phnom Penh62410109ORD-00031708PI-000036304C3D4",
+          "khqr_md5_hash": "e4da3b7fbbce2345d7772b0674a318d5",
+          "expires_at": "2025-01-01T14:30:00Z",
+          "created_at": "2025-01-01T14:00:00Z"
+        }
+      }
+    },
+    {
+      "scenario": "Band D - High assurance user - $2500 wedding catering",
+      "request": {
+        "amount": 2500.00,
+        "currency": "USD",
+        "order_id": "ORD-20250101-0004",
+        "identity_level": "high_assurance",
+        "amount_band": "D"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "intent_id": "PI-20250101-0004",
+          "camdx_correlation_id": "CAMDX-2025-D-004567",
+          "policy_decision": "allowed",
+          "khqr_string": "00020101021230820016khqr.aba@ababank520441115406$2500.802KH5916Num Pang Express6011Phnom Penh62410109ORD-00041708PI-000046304D4E5",
+          "khqr_deeplink": "https://bakong.nbc.gov.kh/qr?data=00020101021230820016khqr.aba@ababank520441115406$2500.802KH5916Num Pang Express6011Phnom Penh62410109ORD-00041708PI-000046304D4E5",
+          "khqr_md5_hash": "1679091c5a880faf6fb5e6087eb1b2dc",
+          "expires_at": "2024-12-15T10:00:00Z",
+          "created_at": "2024-12-15T09:00:00Z"
+        }
+      }
+    },
+    {
+      "scenario": "Band C - Anonymous user blocked - $250 catering",
+      "request": {
+        "amount": 250.00,
+        "currency": "USD",
+        "order_id": "ORD-20250101-0005",
+        "identity_level": "anonymous",
+        "amount_band": "C"
+      },
+      "response": {
+        "status": "blocked",
+        "error": {
+          "code": "POLICY_VIOLATION",
+          "message": "Identity verification required for amount band C",
+          "required_identity_level": "verified",
+          "current_identity_level": "anonymous",
+          "policy_decision": "blocked"
+        }
+      }
+    }
+  ],
+  "settlement_verification_responses": [
+    {
+      "scenario": "Successful settlement - Band A",
+      "request": {
+        "intent_id": "PI-20250101-0001",
+        "khqr_md5_hash": "5f4dcc3b5aa765d61d8327deb882cf99"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "settlement_status": "verified",
+          "bakong_tx_id": "BKG-2025-TXN-789012",
+          "settlement_ref": "SETTLE-20250101-0001",
+          "amount": 7.00,
+          "currency": "USD",
+          "verified_at": "2025-01-01T10:05:23Z",
+          "settlement_time_seconds": 3.2
+        }
+      }
+    },
+    {
+      "scenario": "Successful settlement - Band B",
+      "request": {
+        "intent_id": "PI-20250101-0002",
+        "khqr_md5_hash": "098f6bcd4621d373cade4e832627b4f6"
+      },
+      "response": {
+        "status": "success",
+        "data": {
+          "settlement_status": "verified",
+          "bakong_tx_id": "BKG-2025-TXN-890123",
+          "settlement_ref": "SETTLE-20250101-0002",
+          "amount": 45.00,
+          "currency": "USD",
+          "verified_at": "2025-01-01T11:35:18Z",
+          "settlement_time_seconds": 4.1
+        }
+      }
+    },
+    {
+      "scenario": "Pending settlement - Payment not yet received",
+      "request": {
+        "intent_id": "PI-20250101-0003",
+        "khqr_md5_hash": "e4da3b7fbbce2345d7772b0674a318d5"
+      },
+      "response": {
+        "status": "pending",
+        "data": {
+          "settlement_status": "pending",
+          "message": "Payment not yet received",
+          "expires_at": "2025-01-01T14:30:00Z"
+        }
+      }
+    },
+    {
+      "scenario": "Expired payment intent",
+      "request": {
+        "intent_id": "PI-20241230-0099",
+        "khqr_md5_hash": "c4ca4238a0b923820dcc509a6f75849b"
+      },
+      "response": {
+        "status": "expired",
+        "error": {
+          "code": "PAYMENT_EXPIRED",
+          "message": "Payment intent expired without settlement",
+          "expired_at": "2024-12-30T08:15:00Z"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "files.associations": {
+    "*.json": "json"
+  },
+
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true
+  },
+
+  "json.schemas": [
+    {
+      "fileMatch": ["workflows/*.json"],
+      "schema": {
+        "type": "object",
+        "required": ["name", "nodes", "connections"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^\\[KH\\.GaaS\\]"
+          },
+          "nodes": {
+            "type": "array"
+          },
+          "connections": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ],
+
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+
+  "prettier.tabWidth": 2,
+  "prettier.useTabs": false,
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true
+  }
+}

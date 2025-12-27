@@ -1,0 +1,197 @@
+{
+  "name": "telegraph-workflows",
+  "version": "1.0.0",
+  "description": "Cambodia GaaP-compliant Telegram e-commerce workflows for n8n",
+  "main": "index.js",
+  "scripts": {
+    "validate": "bash scripts/validate-workflows.sh",
+    "deploy": "bash scripts/deploy-workflows.sh",
+    "startup": "bash scripts/startup.sh",
+    "test": "echo \"Error: no test runner configured\" && exit 1",
+    "db:init": "psql -U postgres -d telegraph_commerce -f database/schema.sql",
+    "db:reset": "psql -U postgres -c 'DROP DATABASE IF EXISTS telegraph_commerce;' && psql -U postgres -c 'CREATE DATABASE telegraph_commerce;' && npm run db:init",
+    "db:backup": "pg_dump -U postgres telegraph_commerce > backup_$(date +%Y%m%d_%H%M%S).sql",
+    "lint:json": "find workflows config -name '*.json' -exec jq empty {} \\;",
+    "format:json": "find workflows config -name '*.json' ! -name '*.example.json' -exec jq -S . {} \\; -exec echo {} \\;",
+    "check:credentials": "bash -c 'grep -rE \"(password|api[_-]?key|secret|token)\" workflows/ config/ --exclude=\"*.example.json\" || echo \"No exposed credentials found\"'",
+    "health": "npx -y n8n-mcp n8n_health_check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myownipgit/Omnidm-Telegram-GaaP-Compliant-Workflow.git"
+  },
+  "keywords": [
+    "n8n",
+    "workflows",
+    "cambodia",
+    "gaap",
+    "telegram",
+    "e-commerce",
+    "bakong",
+    "khqr",
+    "camdx",
+    "camdigikey",
+    "automation",
+    "payment-gateway",
+    "fintech"
+  ],
+  "author": {
+    "name": "OmniDM",
+    "email": "contact@omnidm.ai",
+    "url": "https://omnidm.ai"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/myownipgit/Omnidm-Telegram-GaaP-Compliant-Workflow/issues"
+  },
+  "homepage": "https://github.com/myownipgit/Omnidm-Telegram-GaaP-Compliant-Workflow#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "optionalDependencies": {
+    "n8n-mcp": "latest"
+  },
+  "config": {
+    "n8n_url": "https://automation.omnidm.ai",
+    "database": "telegraph_commerce"
+  },
+  "gaap": {
+    "framework": "Cambodia GaaP v1.0",
+    "layers": {
+      "L0": "Legal & Governance",
+      "L1": "Identity (CamDigiKey)",
+      "L2": "Interoperability (CamDX)",
+      "L3": "Payments (Bakong, KHQR)",
+      "L4": "Compliance & Audit (CamDL)",
+      "L5": "Credit & Risk",
+      "L6": "Sectoral APIs (Grab)",
+      "L7": "Applications (Telegram)"
+    },
+    "compliance": {
+      "identity_verification": true,
+      "amount_bands": ["A", "B", "C", "D"],
+      "audit_trail": "blockchain-anchored",
+      "data_sovereignty": "Cambodia"
+    }
+  },
+  "workflows": {
+    "01": {
+      "name": "[KH.GaaS] 01 - Channel Ingress",
+      "description": "Telegram message handling and routing",
+      "layer": "L7",
+      "triggers": ["telegram_webhook"]
+    },
+    "02": {
+      "name": "[KH.GaaS] 02 - Identity & Policy",
+      "description": "CamDigiKey verification and CamDX policy decisions",
+      "layer": "L1-L2",
+      "integrations": ["camdigi", "camdx"]
+    },
+    "03": {
+      "name": "[KH.GaaS] 03 - Intent Builder",
+      "description": "Order and payment intent creation",
+      "layer": "L7",
+      "database": ["orders", "order_items"]
+    },
+    "04": {
+      "name": "[KH.GaaS] 04 - CamDX Payment Intent",
+      "description": "KHQR generation via Bakong",
+      "layer": "L3",
+      "integrations": ["bakong", "khqr"]
+    },
+    "05": {
+      "name": "[KH.GaaS] 05 - Bakong Settlement",
+      "description": "Payment verification and settlement",
+      "layer": "L3",
+      "database": ["settlements", "payment_intents"]
+    },
+    "06": {
+      "name": "[KH.GaaS] 06 - Orchestrator",
+      "description": "Order lifecycle management",
+      "layer": "L7",
+      "database": ["orders"]
+    },
+    "07": {
+      "name": "[KH.GaaS] 07 - Grab Fulfillment",
+      "description": "Delivery assignment and tracking",
+      "layer": "L6",
+      "integrations": ["grab"],
+      "database": ["fulfillments"]
+    },
+    "08": {
+      "name": "[KH.GaaS] 08 - CamDL Audit",
+      "description": "Blockchain audit trail",
+      "layer": "L4",
+      "integrations": ["camdl"],
+      "database": ["audit_logs"]
+    },
+    "09": {
+      "name": "[KH.GaaS] 09 - Exception Handler",
+      "description": "Error handling and recovery",
+      "layer": "L7"
+    }
+  },
+  "database": {
+    "type": "postgresql",
+    "version": ">=13.0",
+    "name": "telegraph_commerce",
+    "tables": [
+      "merchants",
+      "customers",
+      "products",
+      "orders",
+      "order_items",
+      "payment_intents",
+      "settlements",
+      "fulfillments",
+      "audit_logs"
+    ],
+    "custom_types": [
+      "order_status",
+      "payment_status",
+      "identity_level",
+      "amount_band"
+    ]
+  },
+  "integrations": {
+    "telegram": {
+      "platform": "Telegram Bot API",
+      "version": "7.0",
+      "credential_type": "bot_token"
+    },
+    "camdigi": {
+      "platform": "CamDigiKey",
+      "layer": "L1 - Identity",
+      "purpose": "Identity verification"
+    },
+    "camdx": {
+      "platform": "Cambodia Digital Exchange",
+      "layer": "L2 - Interoperability",
+      "purpose": "Policy decisions and routing"
+    },
+    "bakong": {
+      "platform": "National Bank of Cambodia",
+      "layer": "L3 - Payments",
+      "purpose": "KHQR generation and settlement"
+    },
+    "camdl": {
+      "platform": "Cambodia Digital Ledger",
+      "layer": "L4 - Compliance",
+      "purpose": "Audit trail anchoring"
+    },
+    "grab": {
+      "platform": "Grab API",
+      "layer": "L6 - Sectoral",
+      "purpose": "Delivery and fulfillment"
+    }
+  },
+  "security": {
+    "credential_management": ".gitignore protected",
+    "api_keys": "environment variables only",
+    "token_storage": "n8n credential system",
+    "vulnerability_reporting": "contact@omnidm.ai"
+  }
+}

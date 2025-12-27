@@ -1,0 +1,218 @@
+{
+  "description": "Sample Telegram messages for testing Telegraph workflows",
+  "messages": [
+    {
+      "message_id": 1001,
+      "from": {
+        "id": 123456789,
+        "is_bot": false,
+        "first_name": "Sokha",
+        "last_name": "Chen",
+        "username": "sokha_chen",
+        "language_code": "km"
+      },
+      "chat": {
+        "id": 123456789,
+        "first_name": "Sokha",
+        "last_name": "Chen",
+        "username": "sokha_chen",
+        "type": "private"
+      },
+      "date": 1735304400,
+      "text": "/start"
+    },
+    {
+      "message_id": 1002,
+      "from": {
+        "id": 123456789,
+        "is_bot": false,
+        "first_name": "Sokha",
+        "last_name": "Chen",
+        "username": "sokha_chen",
+        "language_code": "km"
+      },
+      "chat": {
+        "id": 123456789,
+        "type": "private"
+      },
+      "date": 1735304420,
+      "text": "I want to order num pang"
+    },
+    {
+      "message_id": 1003,
+      "from": {
+        "id": 987654321,
+        "is_bot": false,
+        "first_name": "Chanthy",
+        "username": "chanthy_phnom_penh",
+        "language_code": "en"
+      },
+      "chat": {
+        "id": 987654321,
+        "type": "private"
+      },
+      "date": 1735304500,
+      "text": "Show menu"
+    },
+    {
+      "message_id": 1004,
+      "from": {
+        "id": 123456789,
+        "is_bot": false,
+        "first_name": "Sokha",
+        "last_name": "Chen",
+        "username": "sokha_chen"
+      },
+      "chat": {
+        "id": 123456789,
+        "type": "private"
+      },
+      "date": 1735304550,
+      "text": "P001"
+    },
+    {
+      "message_id": 1005,
+      "from": {
+        "id": 123456789,
+        "is_bot": false,
+        "first_name": "Sokha",
+        "last_name": "Chen",
+        "username": "sokha_chen"
+      },
+      "chat": {
+        "id": 123456789,
+        "type": "private"
+      },
+      "date": 1735304600,
+      "text": "2"
+    },
+    {
+      "message_id": 1006,
+      "from": {
+        "id": 987654321,
+        "is_bot": false,
+        "first_name": "Chanthy",
+        "username": "chanthy_phnom_penh"
+      },
+      "chat": {
+        "id": 987654321,
+        "type": "private"
+      },
+      "date": 1735304700,
+      "text": "/help"
+    },
+    {
+      "message_id": 1007,
+      "from": {
+        "id": 555666777,
+        "is_bot": false,
+        "first_name": "Dara",
+        "last_name": "Rath",
+        "username": "dara_rath_kh"
+      },
+      "chat": {
+        "id": 555666777,
+        "type": "private"
+      },
+      "date": 1735304800,
+      "text": "I need catering for 50 people"
+    },
+    {
+      "message_id": 1008,
+      "from": {
+        "id": 123456789,
+        "is_bot": false,
+        "first_name": "Sokha",
+        "last_name": "Chen",
+        "username": "sokha_chen"
+      },
+      "chat": {
+        "id": 123456789,
+        "type": "private"
+      },
+      "date": 1735304900,
+      "text": "/verify"
+    },
+    {
+      "message_id": 1009,
+      "from": {
+        "id": 111222333,
+        "is_bot": false,
+        "first_name": "Bopha",
+        "username": "bopha_pp"
+      },
+      "chat": {
+        "id": 111222333,
+        "type": "private"
+      },
+      "date": 1735305000,
+      "text": "Track my order ORD-20250101-0001"
+    },
+    {
+      "message_id": 1010,
+      "from": {
+        "id": 123456789,
+        "is_bot": false,
+        "first_name": "Sokha",
+        "last_name": "Chen",
+        "username": "sokha_chen"
+      },
+      "chat": {
+        "id": 123456789,
+        "type": "private"
+      },
+      "date": 1735305100,
+      "text": "Cancel order"
+    }
+  ],
+  "callback_queries": [
+    {
+      "id": "2001",
+      "from": {
+        "id": 123456789,
+        "first_name": "Sokha",
+        "username": "sokha_chen"
+      },
+      "message": {
+        "message_id": 1011,
+        "chat": {
+          "id": 123456789,
+          "type": "private"
+        }
+      },
+      "data": "product_P001"
+    },
+    {
+      "id": "2002",
+      "from": {
+        "id": 123456789,
+        "first_name": "Sokha",
+        "username": "sokha_chen"
+      },
+      "message": {
+        "message_id": 1012,
+        "chat": {
+          "id": 123456789,
+          "type": "private"
+        }
+      },
+      "data": "confirm_order"
+    },
+    {
+      "id": "2003",
+      "from": {
+        "id": 123456789,
+        "first_name": "Sokha",
+        "username": "sokha_chen"
+      },
+      "message": {
+        "message_id": 1013,
+        "chat": {
+          "id": 123456789,
+          "type": "private"
+        }
+      },
+      "data": "verify_identity"
+    }
+  ]
+}
