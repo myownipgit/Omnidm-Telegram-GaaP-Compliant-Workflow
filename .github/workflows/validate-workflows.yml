@@ -24,7 +24,7 @@ jobs:
       - name: Validate workflow JSON files
         run: |
           echo "🔍 Validating JSON syntax..."
-          for file in workflows/*.json config/*.json; do
+          for file in workflows/g*/*.json config/*.json; do
             if [ -f "$file" ]; then
               echo "Checking: $file"
               if ! jq empty "$file" 2>/dev/null; then
@@ -49,7 +49,7 @@ jobs:
       - name: Validate workflow structure
         run: |
           echo "🔍 Validating workflow structure..."
-          for file in workflows/*.json; do
+          for file in workflows/g*/*.json; do
             if [ -f "$file" ]; then
               echo "Checking: $file"
 
@@ -86,7 +86,7 @@ jobs:
       - name: Validate GaaP naming convention
         run: |
           echo "🔍 Validating GaaP naming convention..."
-          for file in workflows/*.json; do
+          for file in workflows/g*/*.json; do
             if [ -f "$file" ]; then
               name=$(jq -r '.name' "$file")
               echo "Checking: $name"

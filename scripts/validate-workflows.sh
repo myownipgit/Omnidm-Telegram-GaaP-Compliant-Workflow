@@ -32,7 +32,7 @@ invalid_files=0
 
 # 1. Validate JSON syntax
 echo -e "${YELLOW}🔍 Step 1: Validating JSON syntax...${NC}"
-for file in workflows/*.json config/*.json; do
+for file in workflows/g*/*.json config/*.json; do
   if [ -f "$file" ]; then
     ((total_files++))
     if jq empty "$file" 2>/dev/null; then
@@ -48,7 +48,7 @@ echo ""
 
 # 2. Validate workflow structure
 echo -e "${YELLOW}🔍 Step 2: Validating workflow structure...${NC}"
-for file in workflows/*.json; do
+for file in workflows/g*/*.json; do
   if [ -f "$file" ]; then
     filename=$(basename "$file")
 
@@ -72,7 +72,7 @@ echo ""
 
 # 3. Validate GaaP naming convention
 echo -e "${YELLOW}🔍 Step 3: Validating GaaP naming convention...${NC}"
-for file in workflows/*.json; do
+for file in workflows/g*/*.json; do
   if [ -f "$file" ]; then
     name=$(jq -r '.name' "$file" 2>/dev/null)
 
